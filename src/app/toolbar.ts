@@ -19,9 +19,12 @@ import {CommonModule} from '@angular/common';
 import {ChangeDetectionStrategy, ChangeDetectorRef, Component, EventEmitter, Input, NgModule, Optional, Output, TemplateRef} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import {MatButtonModule} from '@angular/material/button';
+import {MatDialog, MatDialogModule} from '@angular/material/dialog';
 import {MatSlideToggleModule} from '@angular/material/slide-toggle';
 import {MatTooltipModule} from '@angular/material/tooltip';
 
+import {AccessibilityHelpCenter} from './a11y/a11y_help_center';
+import {ShortcutService} from './a11y/shortcut.service';
 import {baseColors, BLUE_THEME, clampVal, createDAGFeatures, DagTheme, DEFAULT_THEME, defaultFeatures, defaultZoomConfig, FeatureToggleOptions, generateTheme, isNoState, RuntimeState, ZoomConfig} from './data_types_internal';
 import {fetchIcon, iconForState} from './icon_util';
 import {WorkflowGraphIconModule} from './icon_wrapper';
@@ -197,8 +200,13 @@ export class DagToolbar {
 
   constructor(
       private readonly cdr: ChangeDetectorRef,
-      @Optional() private readonly dagLogger?: DagLogger) {
+      private readonly dialog: MatDialog,
+      private readonly shortcutService: ShortcutService,
+      @Optional() private readonly dagLogger?: DagLogger,
+  ) {
     this.calculateStepMetrics = debounce(this.calculateStepMetrics, 50, this);
+    this.shortcutService.registerShortcutAction(
+        'A11Y_HELP_CENTER', () => {this.openA11yHelpCenter()});
   }
 
   detectChanges() {
@@ -288,6 +296,12 @@ export class DagToolbar {
     this.fullscreenModeChange.emit();
   }
 
+  openA11yHelpCenter() {
+    this.dialog.open(AccessibilityHelpCenter, {
+      maxWidth: 600,
+    });
+  }
+
   colorForMinimap(enabled: boolean) {
     return enabled ? baseColors.blue : baseColors.gray;
   }
@@ -319,6 +333,7 @@ export class DagToolbar {
     DagIconsModule,
     NgVarModule,
     MatTooltipModule,
+    MatDialogModule,
   ],
   declarations: [
     DagToolbar,
